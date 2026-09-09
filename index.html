@@ -1,0 +1,170 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="theme-color" content="#6c5ce7">
+    <title>FinanceFlow 2.0 | Personal Finance Tracker</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+<div class="app-shell">
+    <header class="topbar">
+        <div class="brand">
+            <div class="brand-icon">💰</div>
+            <div><h1>FinanceFlow <span>2.0</span></h1><p>Personal Finance Tracker</p></div>
+        </div>
+        <div class="header-actions">
+            <span id="currentDate" class="date-badge"></span>
+            <button id="darkModeBtn" class="icon-btn" title="Toggle dark mode">🌙</button>
+        </div>
+    </header>
+
+    <main>
+        <section class="hero">
+            <div>
+                <span class="eyebrow">YOUR FINANCIAL OVERVIEW</span>
+                <h2>Take control of your money.</h2>
+                <p>Track income, manage expenses, monitor your budget, set savings goals and understand your spending habits.</p>
+            </div>
+            <div class="hero-orb">₹</div>
+        </section>
+
+        <section class="month-bar">
+            <div>
+                <span class="section-kicker">REPORTING PERIOD</span>
+                <h2 id="selectedMonthLabel">Current Month</h2>
+            </div>
+            <div class="month-controls">
+                <select id="monthFilter" onchange="refreshDashboard()"></select>
+                <button class="secondary-btn" onclick="setCurrentMonth()">Current Month</button>
+                <button class="primary-btn" onclick="exportCSV()">⬇ Export CSV</button>
+            </div>
+        </section>
+
+        <section class="dashboard">
+            <div class="card income-card"><div class="card-top"><span class="card-icon">↗</span><span>Selected Month</span></div><h3>Total Income</h3><p id="income">₹0</p></div>
+            <div class="card expense-card"><div class="card-top"><span class="card-icon">↘</span><span>Selected Month</span></div><h3>Total Expense</h3><p id="expense">₹0</p></div>
+            <div class="card balance-card"><div class="card-top"><span class="card-icon">₹</span><span>Available</span></div><h3>Balance</h3><p id="balance">₹0</p></div>
+            <div class="card budget-card"><div class="card-top"><span class="card-icon">◎</span><span>Monthly</span></div><h3>Budget</h3><p id="budgetDisplay">₹0</p></div>
+            <div class="card savings-card"><div class="card-top"><span class="card-icon">✦</span><span>Efficiency</span></div><h3>Savings Rate</h3><p id="savingsRate">0%</p></div>
+        </section>
+
+        <section class="grid-layout">
+            <div class="section form-section">
+                <div class="section-heading"><div><span class="section-kicker">PLAN</span><h2>Monthly Budget</h2></div><span class="mini-icon">🎯</span></div>
+                <p class="muted">Set a spending limit for the selected month.</p>
+                <div class="form-row"><input type="number" min="0" id="budgetInput" placeholder="Enter budget amount"><button onclick="setBudget()" class="primary-btn">Save Budget</button></div>
+                <div class="progress-wrap">
+                    <div class="progress-label"><span>Budget used</span><strong id="budgetPercent">0%</strong></div>
+                    <div class="progress"><div id="budgetProgress"></div></div>
+                    <p id="budgetMessage" class="small-note">Set a budget to start monitoring spending.</p>
+                </div>
+            </div>
+
+            <div class="section form-section">
+                <div class="section-heading"><div><span class="section-kicker">GOAL</span><h2>Savings Goal</h2></div><span class="mini-icon">🏆</span></div>
+                <p class="muted">Create a target and track your progress.</p>
+                <div class="goal-fields">
+                    <input type="text" id="goalName" maxlength="40" placeholder="Goal name (e.g. Laptop)">
+                    <input type="number" min="0" id="goalTarget" placeholder="Target amount">
+                    <input type="number" min="0" id="goalSaved" placeholder="Already saved">
+                    <button onclick="saveGoal()" class="primary-btn">Save Goal</button>
+                </div>
+                <div id="goalDisplay" class="goal-display"></div>
+            </div>
+        </section>
+
+        <section class="grid-layout">
+            <div class="section form-section">
+                <div class="section-heading"><div><span class="section-kicker">ADD</span><h2>Income</h2></div><span class="mini-icon">💵</span></div>
+                <p class="muted">Record money you receive.</p>
+                <div class="expense-form">
+                    <input type="number" min="0" id="incomeAmount" placeholder="Income amount">
+                    <select id="incomeCategory"><option>Salary</option><option>Freelance</option><option>Business</option><option>Scholarship</option><option>Gift</option><option>Other</option></select>
+                    <input type="date" id="incomeDate">
+                    <button onclick="addIncome()" class="success-btn">Add Income</button>
+                </div>
+            </div>
+
+            <div class="section form-section">
+                <div class="section-heading"><div><span class="section-kicker">RECURRING</span><h2>Quick Recurring Entry</h2></div><span class="mini-icon">🔁</span></div>
+                <p class="muted">Create a reusable monthly entry for common bills or income.</p>
+                <div class="expense-form">
+                    <input type="text" id="recurringName" placeholder="e.g. Rent">
+                    <input type="number" min="0" id="recurringAmount" placeholder="Amount">
+                    <select id="recurringType"><option value="expense">Expense</option><option value="income">Income</option></select>
+                    <button onclick="addRecurring()" class="secondary-btn">Save Template</button>
+                </div>
+                <div id="recurringList" class="recurring-list"></div>
+            </div>
+        </section>
+
+        <section class="section form-section">
+            <div class="section-heading"><div><span class="section-kicker">ADD</span><h2>Expense</h2></div><span class="mini-icon">🧾</span></div>
+            <p class="muted">Categorize every expense so you can identify spending patterns.</p>
+            <div class="expense-form">
+                <input type="number" min="0" id="expenseAmount" placeholder="Expense amount">
+                <select id="category"><option value="Food">🍔 Food</option><option value="Travel">✈️ Travel</option><option value="Shopping">🛍️ Shopping</option><option value="Bills">💡 Bills</option><option value="Education">📚 Education</option><option value="Entertainment">🎬 Entertainment</option><option value="Others">📦 Others</option></select>
+                <input type="text" id="expenseNote" maxlength="60" placeholder="Optional note (e.g. lunch)">
+                <input type="date" id="expenseDate">
+                <button onclick="addExpense()" class="danger-btn">Add Expense</button>
+            </div>
+        </section>
+
+        <section class="section">
+            <div class="section-heading history-heading">
+                <div><span class="section-kicker">ACTIVITY</span><h2>Transaction History</h2></div>
+                <button class="text-btn" onclick="clearAllTransactions()">Clear all</button>
+            </div>
+            <div class="toolbar">
+                <div class="search-box"><span>⌕</span><input type="text" id="search" placeholder="Search transactions..." oninput="renderTransactions()"></div>
+                <select id="filterType" onchange="renderTransactions()"><option value="all">All transactions</option><option value="income">Income only</option><option value="expense">Expenses only</option></select>
+                <select id="filterCategory" onchange="renderTransactions()"><option value="all">All categories</option><option>Food</option><option>Travel</option><option>Shopping</option><option>Bills</option><option>Education</option><option>Entertainment</option><option>Others</option></select>
+            </div>
+            <div id="emptyState" class="empty-state"><div>📊</div><h3>No transactions yet</h3><p>Add a transaction for the selected month to see it here.</p></div>
+            <ul id="history"></ul>
+        </section>
+
+        <section class="charts-grid">
+            <div class="section chart-section"><div class="section-heading"><div><span class="section-kicker">INSIGHTS</span><h2>Income vs Expense</h2></div></div><div class="chart-container"><canvas id="trendChart"></canvas></div></div>
+            <div class="section chart-section"><div class="section-heading"><div><span class="section-kicker">BREAKDOWN</span><h2>Spending by Category</h2></div></div><div class="chart-container"><canvas id="categoryChart"></canvas></div></div>
+        </section>
+
+        <section class="section insights-section">
+            <div class="section-heading"><div><span class="section-kicker">SMART MONEY</span><h2>Financial Insights</h2></div><span class="mini-icon">🧠</span></div>
+            <div id="insightsGrid" class="insights-grid"></div>
+        </section>
+
+        <section class="section tips">
+            <div class="section-heading"><div><span class="section-kicker">GOOD HABITS</span><h2>Financial Tips</h2></div><span class="mini-icon">💡</span></div>
+            <div class="tips-grid">
+                <div class="tip"><span>20%</span><div><strong>Save consistently</strong><p>Try to save at least 20% of your income when possible.</p></div></div>
+                <div class="tip"><span>01</span><div><strong>Track daily</strong><p>Small expenses add up. Record them before you forget.</p></div></div>
+                <div class="tip"><span>50/30/20</span><div><strong>Use a simple rule</strong><p>Balance needs, wants and savings with the 50-30-20 approach.</p></div></div>
+                <div class="tip"><span>🛡️</span><div><strong>Build an emergency fund</strong><p>Work toward keeping a financial cushion for unexpected costs.</p></div></div>
+            </div>
+        </section>
+    </main>
+    <footer><p>FinanceFlow 2.0 © 2026 · Your data stays in your browser.</p></footer>
+</div>
+
+<div id="modal" class="modal hidden">
+    <div class="modal-card">
+        <div class="modal-head"><h2>Edit Transaction</h2><button onclick="closeModal()">×</button></div>
+        <input type="hidden" id="editId">
+        <label>Amount<input type="number" min="0" id="editAmount"></label>
+        <label>Category<select id="editCategory"></select></label>
+        <label>Note<input type="text" maxlength="60" id="editNote"></label>
+        <label>Date<input type="date" id="editDate"></label>
+        <div class="modal-actions"><button class="secondary-btn" onclick="closeModal()">Cancel</button><button class="primary-btn" onclick="updateTransaction()">Save Changes</button></div>
+    </div>
+</div>
+<div id="toast" class="toast"></div>
+<script src="script.js"></script>
+</body>
+</html>

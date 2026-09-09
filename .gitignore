@@ -1,0 +1,23 @@
+# Operating system
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+
+# Temporary files
+*.tmp
+*.temp
+*.log
+
+# Environment files
+.env
+.env.local
+
+# Node
+node_modules/
+
+# Build output
+dist/
+build/

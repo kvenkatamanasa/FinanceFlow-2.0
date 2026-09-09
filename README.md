@@ -192,8 +192,8 @@ FinanceFlow-2.0/
 ├── index.html
 ├── style.css
 ├── script.js
-├── assets/
-│
+├── screenshots
+├── documentation.md
 ├── .gitignore
 └── README.md
 ```
